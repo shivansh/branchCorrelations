@@ -1,0 +1,8 @@
+# Ignore binaries
+demo
+query
+countTrueBranch
+
+# Ignore object and generated files
+*.o
+ast.ps
