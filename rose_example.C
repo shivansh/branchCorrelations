@@ -1,4 +1,6 @@
 int branchCount;
+int incrArr[10000];
+int decrArr[10000];
 
 void decrement(void )
 {
