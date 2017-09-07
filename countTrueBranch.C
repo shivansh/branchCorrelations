@@ -74,6 +74,16 @@ SimpleInstrumentation::visit(SgNode* astNode)
     if (ifBlock != NULL) {
         lineNumber = ifBlock->get_file_info()->get_line();
 
+        SgExprStatement *assign_incr = buildAssignStatement(buildVarRefExp(("increment[" + to_string(lineNumber) + "]")), buildVarRefExp(("increment[" + to_string(lineNumber) + "] + 1")));
+
+        if (ifBlock->get_true_body() != NULL)
+            insertStatement(ifBlock->get_true_body(), assign_incr);
+
+        SgExprStatement *assign_decr = buildAssignStatement(buildVarRefExp(("decrement[" + to_string(lineNumber) + "]")), buildVarRefExp(("decrement[" + to_string(lineNumber) + "] - 1")));
+
+        if (ifBlock->get_false_body() != NULL)
+            insertStatement(ifBlock->get_false_body(), assign_decr);
+        /*
         SgName incrementName("increment");
         SgName decrementName("decrement");
 
@@ -88,6 +98,7 @@ SimpleInstrumentation::visit(SgNode* astNode)
         // Check if "false body" exists
         if (ifBlock->get_false_body() != NULL)
             insertStatement(ifBlock->get_false_body(), decrCallStmt);
+        */
     }
 }
 
