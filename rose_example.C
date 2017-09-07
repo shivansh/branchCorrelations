@@ -1,5 +1,10 @@
 int branchCount;
 
+void decrement(void )
+{
+  --branchCount;
+}
+
 void increment(void )
 {
   ++branchCount;
@@ -7,13 +12,20 @@ void increment(void )
 
 int main(int argc,char **argv)
 {
-  int x = 1;
-  int y;
-  if (x == 1) {
+  int x = 0;
+  if (x < 2) {
     increment();
-    y = 0;
+{
+      x = 0;
+      x++;
+    }
   }
-   else 
-    y = 1;
+   else {
+    decrement();
+{
+      x = 5;
+      x--;
+    }
+  }
   return 0;
 }
