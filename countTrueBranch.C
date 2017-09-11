@@ -1,127 +1,156 @@
 #include "rose.h"
-
+#include<stdlib.h>
 using namespace SageBuilder;
 using namespace SageInterface;
-using namespace std;
 
 class SimpleInstrumentation : public SgSimpleProcessing
 {
     public:
-        void visit (SgNode* astNode);
+        void visit ( SgNode* astNode );
+        void insertCalls(SgIfStmt* astNode, int arr_index, SgBasicBlock* func_body1, SgBasicBlock* func_body2);
+        int counter;
 };
 
-void
-SimpleInstrumentation::visit(SgNode* astNode)
-{
-    int lineNumber;
+void SimpleInstrumentation::insertCalls(SgIfStmt* astNode, int arr_index, SgBasicBlock* func_body1, SgBasicBlock* func_body2){
+    SgName name1 = "increment_if";
+    SgName name2 = "increment_else";
+    // SgFunctionDeclaration *decl_1 = buildNondefiningFunctionDeclaration(name1,buildVoidType(),buildFunctionParameterList(),astNode);
+    // SgFunctionDeclaration *decl_2 = buildNondefiningFunctionDeclaration(name2,buildVoidType(),buildFunctionParameterList(),astNode);
+    //((decl_1->get_declarationModifier()).get_storageModifier()).setExtern();
 
-    SgGlobal* globalScope = isSgGlobal(astNode);
-    SgName var_name = "branchCount";
+    //buildFunctionCallStmt (const SgName &name, SgType *return_type, SgExprListExp *parameters=NULL, SgScopeStatement *scope=NULL)
+    SgName param_name = "index";
 
-    SgTypeInt *intType = buildIntType();
-    SgVariableDeclaration *variableDeclaration;
-    SgVariableDeclaration *incrArrayDeclaration;
-    SgVariableDeclaration *decrArrayDeclaration;
-
-    if (globalScope != NULL) {
-        // Create a parameter list with a parameter
-
-        // Add argument of type "pointer to int"
-        // SgPointerType *pointerType = buildPointerType(intType);
-        SgInitializedName *var_init_name = buildInitializedName("", buildVoidType());
-
-        // Create a function declaration for incrementing the argument
-        SgFunctionParameterList *parameterList = buildFunctionParameterList();
-        appendArg(parameterList, var_init_name);
-
-        SgName incrFuncName = "increment";
-        SgFunctionDeclaration *incrFunc = buildDefiningFunctionDeclaration(incrFuncName, buildVoidType(), parameterList, globalScope);
-        SgBasicBlock *incrFuncBody = incrFunc->get_definition()->get_body();
-
-        // Insert a statement in the function body
-        SgVarRefExp *var_ref = buildVarRefExp(var_name, incrFuncBody);
-        SgPlusPlusOp *pp_expression = buildPlusPlusOp(var_ref);
-        SgExprStatement *ppStmt = buildExprStatement(pp_expression);
-
-        // Insert a statement into the function body
-        prependStatement(ppStmt, incrFuncBody);
-        prependStatement(incrFunc, globalScope);
-        variableDeclaration = buildVariableDeclaration ("branchCount", buildIntType());
-        incrArrayDeclaration = buildVariableDeclaration("incrArr[10000]", buildIntType());
-        decrArrayDeclaration = buildVariableDeclaration("decrArr[10000]", buildIntType());
-
-        // Create a function declaration for decrementing the argument
-        SgName decrFuncName = "decrement";
-        SgFunctionDeclaration *decrFunc = buildDefiningFunctionDeclaration(decrFuncName, buildVoidType(), parameterList, globalScope);
-        SgBasicBlock *decrFuncBody = decrFunc->get_definition()->get_body();
-
-        // Insert a statement in the function body
-        SgMinusMinusOp *mm_expression = buildMinusMinusOp(var_ref);
-        SgExprStatement *mmStmt = buildExprStatement(mm_expression);
-
-        // Insert a statement into the function body
-        prependStatement(mmStmt, decrFuncBody);
-        prependStatement(decrFunc, globalScope);
-
-        // Add global variables
-        prependStatement(decrArrayDeclaration, globalScope);
-        prependStatement(incrArrayDeclaration, globalScope);
-        prependStatement(variableDeclaration, globalScope);
+    SgExprStatement* callStmt_1 = buildFunctionCallStmt(name1,buildVoidType(), buildExprListExp(buildIntVal(arr_index)),astNode);
+    SgExprStatement* callStmt_2 = buildFunctionCallStmt(name2,buildVoidType(), buildExprListExp(buildIntVal(arr_index)),astNode);
+    insertStatement(astNode->get_true_body(),callStmt_1);
+    if(astNode->get_false_body()!=NULL){
+        insertStatement(astNode->get_false_body(),callStmt_2);
     }
-
-    SgIfStmt *ifBlock = isSgIfStmt(astNode);
-
-    if (ifBlock != NULL) {
-        lineNumber = ifBlock->get_file_info()->get_line();
-
-        // SgExprStatement *assign_incr = buildAssignStatement(buildVarRefExp(("increment[" + to_string(lineNumber) + "]")), buildVarRefExp(("increment[" + to_string(lineNumber) + "] + 1")));
-
-        if (ifBlock->get_true_body() != NULL) {
-            SgName incr_arr_name = "incrArr";
-            SgVarRefExp *incr_arr_ref = buildVarRefExp(incr_arr_name, ifBlock->get_true_body());
-            SgPlusPlusOp *pp_array = buildPlusPlusOp(incr_arr_ref);
-            SgExprStatement *pp_array_stmt = buildExpression(pp_array);
-
-            prependStatement(pp_array_stmt, ifBlock->get_true_body());
-        }
-            insertStatement(ifBlock->get_true_body(), assign_incr);
-
-        // SgExprStatement *assign_decr = buildAssignStatement(buildVarRefExp(("decrement[" + to_string(lineNumber) + "]")), buildVarRefExp(("decrement[" + to_string(lineNumber) + "] - 1")));
-
-        // if (ifBlock->get_false_body() != NULL)
-            // insertStatement(ifBlock->get_false_body(), assign_decr);
-
-        /*
-        SgName incrementName("increment");
-        SgName decrementName("decrement");
-
-        // Insert a call to increment()
-        SgExprStatement *incrCallStmt = buildFunctionCallStmt(incrementName, buildVoidType(), buildExprListExp(), ifBlock);
-        // Check if "true body" exists
-        if (ifBlock->get_true_body() != NULL)
-            insertStatement(ifBlock->get_true_body(), incrCallStmt);
-
-        // Insert a call to decrement()
-        SgExprStatement *decrCallStmt = buildFunctionCallStmt(decrementName, buildVoidType(), buildExprListExp(), ifBlock);
-        // Check if "false body" exists
-        if (ifBlock->get_false_body() != NULL)
-            insertStatement(ifBlock->get_false_body(), decrCallStmt);
-        */
+    else{
+        astNode->set_false_body(callStmt_2);
     }
 }
 
-int
-main(int argc, char *argv[])
+void SimpleInstrumentation::visit ( SgNode* astNode )
 {
-    // Initialize and check compatibility.
+    SgGlobal* globalScope = isSgGlobal(astNode);
+    Rose_STL_Container<SgNode*> ifStmtList;
+    if (globalScope != NULL)
+    {
+        //Count number of if nodes and create an array of pointers to them
+        ifStmtList = NodeQuery::querySubTree (globalScope,V_SgIfStmt);
+        counter = 0;
+        for (Rose_STL_Container<SgNode*>::iterator i = ifStmtList.begin(); i != ifStmtList.end(); i++)
+        {
+            SgIfStmt* ifStmt = isSgIfStmt(*i);
+            ROSE_ASSERT(ifStmt != NULL);
+
+            if ( (*i)->get_file_info()->isCompilerGenerated() == false)
+            {
+                counter++;
+            }
+        }
+        //ifNodes = (SgNode**)malloc(counter*sizeof(SgNode*));
+
+
+        // Create a parameter list with a parameter
+        SgTypeInt *ref_type = buildIntType();
+        SgInitializedName *var1_init_name = buildInitializedName("index", ref_type);
+        SgFunctionParameterList* parameterList = buildFunctionParameterList();
+        appendArg(parameterList,var1_init_name);
+
+        // Create a defining functionDeclaration (with a function body)
+        SgName func_name1 = "increment_if";
+        SgFunctionDeclaration * func1 = buildDefiningFunctionDeclaration (func_name1, buildVoidType(), parameterList,globalScope);
+        SgBasicBlock*  func_body1 = func1->get_definition()->get_body();
+        SgName lhs_expr_name1 = "CountIf";
+        SgName rhs_expr_name1 = "index";
+        SgVarRefExp *lhs_var_ref1 = buildVarRefExp(lhs_expr_name1,func_body1);
+        SgVarRefExp *rhs_var_ref1 = buildVarRefExp(rhs_expr_name1,func_body1);
+        // SgPlusPlusOp *pp_expression1 = buildPlusPlusOp(lhs_var_ref1);
+        // SgExprStatement* new_stmt1 = buildExprStatement(SgPntrArrRefExp(pp_expression1,rhs_var_ref1,buildIntType()));
+        SgExprStatement* new_stmt1 = buildExprStatement(buildPlusPlusOp(buildPntrArrRefExp(lhs_var_ref1,rhs_var_ref1)));
+
+
+        // Create a defining functionDeclaration (with a function body)
+        SgName func_name2 = "increment_else";
+        SgFunctionDeclaration * func2 = buildDefiningFunctionDeclaration (func_name2, buildVoidType(), parameterList,globalScope);
+        SgBasicBlock*  func_body2 = func2->get_definition()->get_body();
+        SgName lhs_expr_name2 = "CountElse";
+        SgName rhs_expr_name2 = "index";
+        SgVarRefExp *lhs_var_ref2 = buildVarRefExp(lhs_expr_name2,func_body2);
+        SgVarRefExp *rhs_var_ref2 = buildVarRefExp(rhs_expr_name2,func_body2);
+        // SgPlusPlusOp *pp_expression2 = buildPlusPlusOp(lhs_var_ref2);
+        // SgExprStatement* new_stmt2 = buildExprStatement(SgPntrArrRefExp(pp_expression2,rhs_var_ref2,buildIntType()));
+        SgExprStatement* new_stmt2 = buildExprStatement(buildPlusPlusOp(buildPntrArrRefExp(lhs_var_ref2,rhs_var_ref2)));
+
+        // insert a statement into the function body
+        prependStatement(new_stmt1,func_body1);
+        prependStatement(new_stmt2,func_body2);
+
+        // insert a statement into the function body
+        prependStatement(func1,globalScope);
+        prependStatement(func2,globalScope);
+
+        SgVariableDeclaration* variableDeclaration1 = buildVariableDeclaration("CountIf", buildArrayType(buildIntType(), buildIntVal(counter)));
+        prependStatement (variableDeclaration1, globalScope);
+        SgVariableDeclaration* variableDeclaration2 = buildVariableDeclaration("CountElse", buildArrayType(buildIntType(), buildIntVal(counter)));
+        prependStatement (variableDeclaration2, globalScope);
+
+
+        int lineNumber[counter];
+
+        for (Rose_STL_Container<SgNode*>::iterator i = ifStmtList.begin(); i != ifStmtList.end(); i++){
+
+            SgIfStmt* ifStmt = isSgIfStmt(*i);
+            ROSE_ASSERT(ifStmt != NULL);
+
+            if ( (*i)->get_file_info()->isCompilerGenerated() == false)
+            {
+                int arr_index = i - ifStmtList.begin();
+
+                SgIfStmt *ifBlock = isSgIfStmt(astNode);
+                ifBlock = ifStmt;
+                if (ifBlock != NULL) {
+                    lineNumber[arr_index] = ifBlock->get_file_info()->get_line();
+                }
+
+                insertCalls(ifStmt, (int)arr_index, func_body1, func_body2);
+            }
+        }
+
+        std::vector<SgNode*> funcDefList = NodeQuery::querySubTree(globalScope, V_SgFunctionDefinition);
+
+        std::vector<SgNode*>::iterator iter;
+        for (iter = funcDefList.begin(); iter != funcDefList.end(); iter++) {
+            SgFunctionDefinition *cur_def = isSgFunctionDefinition(*iter);
+            if (cur_def->get_mangled_name().getString().substr(0, 4).compare("main"))
+                continue;
+
+            ROSE_ASSERT(cur_def);
+            SgBasicBlock *body = cur_def->get_body();
+            // Build the call statement for each place
+            SgExprStatement *callStmt1 = buildFunctionCallStmt("evaluate", buildIntType(), buildExprListExp(), body);
+
+            // Instrument the function
+            instrumentEndOfFunction(cur_def->get_declaration(), callStmt1);
+            prependStatement(buildFunctionCallStmt("printf",buildIntType(), buildExprListExp(buildStringVal("arr_index")),body),body);
+        }
+
+    }
+}
+
+int main ( int argc, char * argv[] )
+{
+    // Initialize and check compatibility. See rose::initialize
     ROSE_INITIALIZE;
 
-    SgProject* project = frontend(argc, argv);
+    SgProject* project = frontend(argc,argv);
     ROSE_ASSERT(project != NULL);
 
     SimpleInstrumentation treeTraversal;
-    treeTraversal.traverseInputFiles (project, preorder);
+    treeTraversal.traverseInputFiles ( project, preorder );
     AstTests::runAllTests(project);
-
     return backend(project);
 }
