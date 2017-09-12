@@ -75,14 +75,12 @@ void SimpleInstrumentation::visit ( SgNode* astNode )
 
         // Create a defining functionDeclaration (with a function body)
         SgName func_name2 = "increment_else";
-        SgFunctionDeclaration * func2 = buildDefiningFunctionDeclaration (func_name2, buildVoidType(), parameterList,globalScope);
+        SgFunctionDeclaration *func2 = buildDefiningFunctionDeclaration (func_name2, buildVoidType(), parameterList,globalScope);
         SgBasicBlock*  func_body2 = func2->get_definition()->get_body();
         SgName lhs_expr_name2 = "CountElse";
         SgName rhs_expr_name2 = "index";
         SgVarRefExp *lhs_var_ref2 = buildVarRefExp(lhs_expr_name2,func_body2);
         SgVarRefExp *rhs_var_ref2 = buildVarRefExp(rhs_expr_name2,func_body2);
-        // SgPlusPlusOp *pp_expression2 = buildPlusPlusOp(lhs_var_ref2);
-        // SgExprStatement* new_stmt2 = buildExprStatement(SgPntrArrRefExp(pp_expression2,rhs_var_ref2,buildIntType()));
         SgExprStatement* new_stmt2 = buildExprStatement(buildPlusPlusOp(buildPntrArrRefExp(lhs_var_ref2,rhs_var_ref2)));
 
         // insert a statement into the function body
@@ -111,13 +109,19 @@ void SimpleInstrumentation::visit ( SgNode* astNode )
         SgExprStatement *while_condition = buildExprStatement(buildLessThanOp(while_lhs_ref, buildIntVal(counter)));
 
         SgWhileStmt *while_stmt = buildWhileStmt(while_condition, while_body, NULL);
-        SgVariableDeclaration *i_var = buildVariableDeclaration("i", buildIntType());
+        SgVariableDeclaration *i_var = buildVariableDeclaration(i_name, buildIntType());
 
         // insert a statement into the function body
         prependStatement(while_stmt,func_body);
-        appendStatement(new_stmt1, while_stmt->get_body()->get_scope());
+        SgExprStatement *print_func = buildFunctionCallStmt("printf", buildIntType(), buildExprListExp(buildStringVal("%d %d\\n"), buildPntrArrRefExp(lhs_var_ref1, while_lhs_ref), buildPntrArrRefExp(lhs_var_ref2, while_lhs_ref)), func_body);
+        insertStatementBefore(while_body, print_func, true);
 
+        int init = 0;
         prependStatement(i_var, func_body);
+        SgExprStatement *assign_i = buildAssignStatement(buildVarRefExp(i_name, func_body), buildIntVal(0));
+
+        // prependStatement(assign_i, func_body);
+        insertStatementBefore(while_stmt, assign_i);
         prependStatement(func, globalScope);
 
         SgVariableDeclaration* variableDeclaration1 = buildVariableDeclaration("CountIf", buildArrayType(buildIntType(), buildIntVal(counter)));
@@ -161,8 +165,9 @@ void SimpleInstrumentation::visit ( SgNode* astNode )
             SgExprStatement *callStmt1 = buildFunctionCallStmt("evaluate", buildIntType(), buildExprListExp(), body);
 
             // Instrument the function
+            std::vector<SgNode*> funcCallList = NodeQuery::querySubTree(globalScope, V_SgFunctionCallStmt);
             instrumentEndOfFunction(cur_def->get_declaration(), callStmt1);
-            prependStatement(buildFunctionCallStmt("printf",buildIntType(), buildExprListExp(buildStringVal("arr_index")),body),body);
+            // prependStatement(buildFunctionCallStmt("printf",buildIntType(), buildExprListExp(buildStringVal("arr_index")),body),body);
         }
 
     }
