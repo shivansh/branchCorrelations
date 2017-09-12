@@ -93,6 +93,33 @@ void SimpleInstrumentation::visit ( SgNode* astNode )
         prependStatement(func1,globalScope);
         prependStatement(func2,globalScope);
 
+                // Create a defining functionDeclaration (with a function body)
+        SgName evaluate_func = "evaluate";
+        SgFunctionDeclaration * func        = buildDefiningFunctionDeclaration (evaluate_func, buildVoidType(), buildFunctionParameterList(),globalScope);
+        SgBasicBlock*  func_body    = func->get_definition()->get_body();
+
+        // Insert a statement in the function body
+
+        // make a while statement
+        SgName i_name = "i";
+        SgVarRefExp *i_ref = buildVarRefExp(i_name, func_body);
+        SgPlusPlusOp *pp_expression = buildPlusPlusOp(i_ref);
+        SgExprStatement* while_body = buildExprStatement(pp_expression);
+
+        SgName while_lhs_expr = "i";
+        SgVarRefExp *while_lhs_ref = buildVarRefExp(while_lhs_expr,func_body);
+        SgExprStatement *while_condition = buildExprStatement(buildLessThanOp(while_lhs_ref, buildIntVal(counter)));
+
+        SgWhileStmt *while_stmt = buildWhileStmt(while_condition, while_body, NULL);
+        SgVariableDeclaration *i_var = buildVariableDeclaration("i", buildIntType());
+
+        // insert a statement into the function body
+        prependStatement(while_stmt,func_body);
+        appendStatement(new_stmt1, while_stmt->get_body()->get_scope());
+
+        prependStatement(i_var, func_body);
+        prependStatement(func, globalScope);
+
         SgVariableDeclaration* variableDeclaration1 = buildVariableDeclaration("CountIf", buildArrayType(buildIntType(), buildIntVal(counter)));
         prependStatement (variableDeclaration1, globalScope);
         SgVariableDeclaration* variableDeclaration2 = buildVariableDeclaration("CountElse", buildArrayType(buildIntType(), buildIntVal(counter)));
