@@ -116,7 +116,6 @@ void SimpleInstrumentation::visit ( SgNode* astNode )
         SgExprStatement *print_func = buildFunctionCallStmt("printf", buildIntType(), buildExprListExp(buildStringVal("%d %d\\n"), buildPntrArrRefExp(lhs_var_ref1, while_lhs_ref), buildPntrArrRefExp(lhs_var_ref2, while_lhs_ref)), func_body);
         insertStatementBefore(while_body, print_func, true);
 
-        int init = 0;
         prependStatement(i_var, func_body);
         SgExprStatement *assign_i = buildAssignStatement(buildVarRefExp(i_name, func_body), buildIntVal(0));
 
@@ -165,8 +164,13 @@ void SimpleInstrumentation::visit ( SgNode* astNode )
             SgExprStatement *callStmt1 = buildFunctionCallStmt("evaluate", buildIntType(), buildExprListExp(), body);
 
             // Instrument the function
-            std::vector<SgNode*> funcCallList = NodeQuery::querySubTree(globalScope, V_SgFunctionCallStmt);
-            instrumentEndOfFunction(cur_def->get_declaration(), callStmt1);
+            SgFunctionDeclaration *mainFunc = findMain(globalScope);
+            SgBasicBlock *main_body = mainFunc->get_definition()->get_body();
+            pushScopeStack(main_body);
+            SgStatement *laststmt = getLastStatement(topScopeStack());
+            laststmt = getLastStatement(topScopeStack());
+            insertStatementBefore(laststmt, callStmt1);
+            // instrumentEndOfFunction(cur_def->get_declaration(), callStmt1);
             // prependStatement(buildFunctionCallStmt("printf",buildIntType(), buildExprListExp(buildStringVal("arr_index")),body),body);
         }
 
