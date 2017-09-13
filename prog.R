@@ -1,6 +1,6 @@
 data<-read.csv("output.csv")
-#print(data)
-data<-data[2:nrow(data),2:ncol(data)]
+print(data)
+data<-data[2:nrow(data),1:ncol(data)]
 colnames(data)[colnames(data)=="TestCase"]<-"LineNumber"
 print(data)
 rownames(data)<-seq(length=nrow(data))
@@ -55,7 +55,7 @@ for(i in 1:k){
 	for(j in 1:k){
 #        print("inner loop")
 #        print(t(data[i,2:ncol(data)]))
-		result[i,j]<-chisq.test(t(data[i,2:ncol(data)]),t(data[j,2:ncol(data)]))$p.value
+		result[i,j]<-chisq.test(t(df[i,]),t(df[j,]))$p.value
 	}
 }
 print("matrix of p-values for each pair of branches")
