@@ -16,11 +16,14 @@ countTrueBranch.o: countTrueBranch.C
 countTrueBranch: countTrueBranch.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-.PHONY: clean run
+.PHONY: clean run generate_correlations
 
 clean:
 	rm -f gen_line_num gen_line_num.o \
 	      countTrueBranch countTrueBranch.o
+
+generate_correlations:
+	Rscript prog.R
 
 run:
 	./process_csv.sh testcases/testcase testcases/tcas.c

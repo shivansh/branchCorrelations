@@ -12,10 +12,14 @@ sudo apt-get install csvtool
 ```
 The use of this package has been done to take transposition of the generated CSV file.
 
+Also, for running the R file, the package required is: `littler`.
+
 ## Instructions
 For generating the CSV file, execute -
 ```
-make && make run
+make
+make run 			# Generates the CSV file
+make generate_correlations  	# Generates correlations
 ```
 This will generate the file `output.csv`
 The testcase files are placed inside the directory `TestCase`. In case adding new testcase files for instrumentation, their names in the [Makefile](Makefile) have to be updated appropriately (in the last line).

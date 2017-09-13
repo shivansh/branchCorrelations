@@ -54,3 +54,4 @@ printf "LineNumber" >> "$output_csv"
 for ((j=1; j<$i; j++)); do printf ',' >> "$output_csv"; done
 echo "" >> "$output_csv"
 cut -d',' -f2- "$initial_csv" >> "$output_csv"
+rm -f "$initial_csv" "$initial_output" "$line_csv"
