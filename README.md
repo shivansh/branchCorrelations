@@ -17,9 +17,10 @@ For running the R file, the following packages are required -
 
 For generating the CSV file, execute -
 ```
-make
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/rose_install/lib
+make 				# Compilation step
 make run 			# Generates the CSV file
 make generate_correlations  	# Generates correlations
 ```
 This will generate the file `output.csv`
-The testcase files are placed inside the directory `TestCase`. In case adding new testcase files for instrumentation, their names in the [Makefile](Makefile) have to be updated appropriately (in the last line).
+The testcase files are placed inside the directory [testcases](testcases). In case adding new testcase files for instrumentation, their names in the [Makefile](Makefile) have to be updated appropriately (in the last line).
