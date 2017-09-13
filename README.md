@@ -4,6 +4,14 @@ Done in collaboration by -
 * Jaivardhan Kapoor (150300)
 * Shivansh Rai (14658)
 
+## Dependencies
+The following package needs to be installed: `csvtool`. The code was successfully tested against version `1.4.2-1`.
+On a ubuntu machine, this package can be installed via -
+```
+sudo apt-get install csvtool
+```
+The use of this package has been done to take transposition of the generated CSV file.
+
 ## Instructions
 For generating the CSV file, execute -
 ```

@@ -41,15 +41,7 @@ while IFS='' read -r testcase_line || [[ -n "$testcase_line" ]]; do
 done < "$1"
 
 # Take a transpose of the generated csv file
-(
-    c=1
-    num_lines=$(wc -l < "$initial_csv")
-
-    for ((i=0; i<num_lines+3; i++)) {
-        cut -d, -f$c "$initial_csv" | paste -sd ','
-        ((c++))
-    }
-) > "$initial_output"
+csvtool transpose "$initial_csv" > "$initial_output"
 
 sed -i '$d' "$initial_output"
 paste -d',' <(cut -d',' -f"$i" "$initial_output") "$line_csv" <(cut -d',' -f1- "$initial_output") > "$initial_csv"
@@ -62,6 +54,3 @@ printf "LineNumber" >> "$output_csv"
 for ((j=1; j<$i; j++)); do printf ',' >> "$output_csv"; done
 echo "" >> "$output_csv"
 cut -d',' -f2- "$initial_csv" >> "$output_csv"
-sed -i -e '/,,,,,,/ { N; d; }' "$output_csv"
-sed -i '$d' "$output_csv"
-rm -f "$initial_csv" "$initial_output" "$line_csv"
