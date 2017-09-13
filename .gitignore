@@ -1,8 +1,9 @@
 # Ignore binaries
-demo
-query
 countTrueBranch
+gen_line_num
+a.out
 
 # Ignore object and generated files
 *.o
-ast.ps
+output.csv
+TestCase

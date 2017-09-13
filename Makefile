@@ -3,18 +3,12 @@ CPPFLAGS = $(shell ~/rose_install/bin/rose-config cppflags)
 CXXFLAGS = $(shell ~/rose_install/bin/rose-config cxxflags)
 LDFLAGS  = $(shell ~/rose_install/bin/rose-config ldflags)
 LIBDIRS  = $(shell ~/rose_install/bin/rose-config libdirs)
-MOSTLYCLEANFILES =
 
-all: demo countTrueBranch query
+all: gen_line_num countTrueBranch
 
-demo.o: demo.C
+gen_line_num.o: gen_line_num.C
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $^
-demo: demo.o
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
-
-query.o: query.C
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ -c $^
-query: query.o
+gen_line_num: gen_line_num.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 countTrueBranch.o: countTrueBranch.C
@@ -22,8 +16,11 @@ countTrueBranch.o: countTrueBranch.C
 countTrueBranch: countTrueBranch.o
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
-MOSTLYCLEANFILES += demo demo.o
+.PHONY: clean run
 
-.PHONY: clean
 clean:
-	rm -f $(MOSTLYCLEANFILES)
+	rm -f gen_line_num gen_line_num.o \
+	      countTrueBranch countTrueBranch.o
+
+run:
+	./process_csv.sh TestCase/testcase TestCase/tcas.c
