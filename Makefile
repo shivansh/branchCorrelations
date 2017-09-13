@@ -23,4 +23,4 @@ clean:
 	      countTrueBranch countTrueBranch.o
 
 run:
-	./process_csv.sh TestCase/testcase TestCase/tcas.c
+	./process_csv.sh testcases/testcase testcases/tcas.c
