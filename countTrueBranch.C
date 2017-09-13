@@ -2,7 +2,7 @@
 // branch was taken during runtime corresponding to the given input C file.
 
 #include "rose.h"
-#include<stdlib.h>
+#include <stdlib.h>
 
 using namespace SageBuilder;
 using namespace SageInterface;
@@ -11,29 +11,30 @@ class SimpleInstrumentation : public SgSimpleProcessing
 {
     public:
         void visit(SgNode* astNode);
-        void insertCalls(SgIfStmt* astNode, int arr_index, SgBasicBlock* func_body1, SgBasicBlock* func_body2);
+        void insertCalls(SgIfStmt *astNode, int arr_index, SgBasicBlock *func_body1, SgBasicBlock *func_body2);
         int counter;
 };
 
-void SimpleInstrumentation::insertCalls(SgIfStmt* astNode, int arr_index, SgBasicBlock* func_body1, SgBasicBlock* func_body2)
+void SimpleInstrumentation::insertCalls(SgIfStmt *astNode, int arr_index, SgBasicBlock *func_body1, SgBasicBlock *func_body2)
 {
     SgName name1 = "increment_if";
     SgName name2 = "increment_else";
     SgName param_name = "index";
-    SgExprStatement* callStmt_1 = buildFunctionCallStmt(name1, buildVoidType(), buildExprListExp(buildIntVal(arr_index)), astNode);
-    SgExprStatement* callStmt_2 = buildFunctionCallStmt(name2, buildVoidType(), buildExprListExp(buildIntVal(arr_index)), astNode);
-    insertStatement(astNode->get_true_body(),callStmt_1);
+    SgExprStatement *callStmt_1 = buildFunctionCallStmt(name1, buildVoidType(), buildExprListExp(buildIntVal(arr_index)), astNode);
+    SgExprStatement *callStmt_2 = buildFunctionCallStmt(name2, buildVoidType(), buildExprListExp(buildIntVal(arr_index)), astNode);
+    insertStatement(astNode->get_true_body(), callStmt_1);
 
     if (astNode->get_false_body()!=NULL)
-        insertStatement(astNode->get_false_body(),callStmt_2);
+        insertStatement(astNode->get_false_body(), callStmt_2);
     else
         astNode->set_false_body(callStmt_2);
 }
 
-void SimpleInstrumentation::visit (SgNode* astNode)
+void SimpleInstrumentation::visit(SgNode *astNode)
 {
-    SgGlobal* globalScope = isSgGlobal(astNode);
+    SgGlobal *globalScope = isSgGlobal(astNode);
     Rose_STL_Container<SgNode*> ifStmtList;
+
     if (globalScope != NULL) {
         // Count number of if nodes and create an array of pointers to them
         ifStmtList = NodeQuery::querySubTree (globalScope,V_SgIfStmt);
@@ -42,20 +43,20 @@ void SimpleInstrumentation::visit (SgNode* astNode)
             SgIfStmt* ifStmt = isSgIfStmt(*i);
             ROSE_ASSERT(ifStmt != NULL);
 
-            if ( (*i)->get_file_info()->isCompilerGenerated() == false)
+            if ((*i)->get_file_info()->isCompilerGenerated() == false)
                 counter++;
         }
 
         // Create a parameter list with a parameter
         SgTypeInt *ref_type = buildIntType();
         SgInitializedName *var1_init_name = buildInitializedName("index", ref_type);
-        SgFunctionParameterList* parameterList = buildFunctionParameterList();
+        SgFunctionParameterList *parameterList = buildFunctionParameterList();
         appendArg(parameterList, var1_init_name);
 
         // Create a defining functionDeclaration (with a function body)
         SgName func_name1 = "increment_if";
         SgFunctionDeclaration * func1 = buildDefiningFunctionDeclaration (func_name1, buildVoidType(), parameterList, globalScope);
-        SgBasicBlock*  func_body1 = func1->get_definition()->get_body();
+        SgBasicBlock *func_body1 = func1->get_definition()->get_body();
         SgName lhs_expr_name1 = "CountIf";
         SgName rhs_expr_name1 = "index";
         SgVarRefExp *lhs_var_ref1 = buildVarRefExp(lhs_expr_name1, func_body1);
@@ -64,8 +65,8 @@ void SimpleInstrumentation::visit (SgNode* astNode)
 
         // Create a defining functionDeclaration (with a function body)
         SgName func_name2 = "increment_else";
-        SgFunctionDeclaration *func2 = buildDefiningFunctionDeclaration (func_name2, buildVoidType(), parameterList, globalScope);
-        SgBasicBlock*  func_body2 = func2->get_definition()->get_body();
+        SgFunctionDeclaration *func2 = buildDefiningFunctionDeclaration(func_name2, buildVoidType(), parameterList, globalScope);
+        SgBasicBlock *func_body2 = func2->get_definition()->get_body();
         SgName lhs_expr_name2 = "CountElse";
         SgName rhs_expr_name2 = "index";
         SgVarRefExp *lhs_var_ref2 = buildVarRefExp(lhs_expr_name2, func_body2);
@@ -104,18 +105,18 @@ void SimpleInstrumentation::visit (SgNode* astNode)
         insertStatementBefore(while_stmt, assign_i);
         prependStatement(func, globalScope);
 
-        SgVariableDeclaration* variableDeclaration1 = buildVariableDeclaration("CountIf", buildArrayType(buildIntType(), buildIntVal(counter)));
-        prependStatement (variableDeclaration1, globalScope);
-        SgVariableDeclaration* variableDeclaration2 = buildVariableDeclaration("CountElse", buildArrayType(buildIntType(), buildIntVal(counter)));
-        prependStatement (variableDeclaration2, globalScope);
+        SgVariableDeclaration *variableDeclaration1 = buildVariableDeclaration("CountIf", buildArrayType(buildIntType(), buildIntVal(counter)));
+        prependStatement(variableDeclaration1, globalScope);
+        SgVariableDeclaration *variableDeclaration2 = buildVariableDeclaration("CountElse", buildArrayType(buildIntType(), buildIntVal(counter)));
+        prependStatement(variableDeclaration2, globalScope);
 
         int lineNumber[counter];
 
-        for (Rose_STL_Container<SgNode*>::iterator i = ifStmtList.begin(); i != ifStmtList.end(); i++){
+        for (Rose_STL_Container<SgNode*>::iterator i = ifStmtList.begin(); i != ifStmtList.end(); i++) {
             SgIfStmt* ifStmt = isSgIfStmt(*i);
             ROSE_ASSERT(ifStmt != NULL);
 
-            if ( (*i)->get_file_info()->isCompilerGenerated() == false) {
+            if ((*i)->get_file_info()->isCompilerGenerated() == false) {
                 int arr_index = i - ifStmtList.begin();
                 SgIfStmt *ifBlock = isSgIfStmt(astNode);
                 ifBlock = ifStmt;
@@ -153,10 +154,8 @@ int main(int argc, char * argv[])
 {
     // Initialize and check compatibility. See rose::initialize
     ROSE_INITIALIZE;
-
-    SgProject* project = frontend(argc, argv);
+    SgProject *project = frontend(argc, argv);
     ROSE_ASSERT(project != NULL);
-
     SimpleInstrumentation treeTraversal;
     treeTraversal.traverseInputFiles(project, preorder);
     AstTests::runAllTests(project);
