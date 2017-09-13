@@ -20,10 +20,11 @@ countTrueBranch: countTrueBranch.o
 
 clean:
 	rm -f gen_line_num gen_line_num.o \
-	      countTrueBranch countTrueBranch.o
+	      countTrueBranch countTrueBranch.o \
+	      a.out rose_tcase.c
 
 generate_correlations:
-	Rscript prog.R
+	Rscript correlations.R
 
 run:
 	./process_csv.sh testcases/testcase testcases/tcas.c

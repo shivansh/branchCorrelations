@@ -5,16 +5,16 @@ Done in collaboration by -
 * Shivansh Rai (14658)
 
 ## Dependencies
-The following package needs to be installed: `csvtool`. The code was successfully tested against version `1.4.2-1`.
-On a ubuntu machine, this package can be installed via -
-```
-sudo apt-get install csvtool
-```
-The use of this package has been done to take transposition of the generated CSV file.
+The following packages need to be installed for generating the CSV file -
+* `csvtool` : The use of this package has been done to take transposition of the generated CSV file.
 
-Also, for running the R file, the package required is: `littler`.
+For running the R file, the following packages are required -
+* `littler`
+* `r-cran-plyr`
 
 ## Instructions
+**NOTE:** The beginning 5 variables in [Makefile](Makefile) need to be updated as per the local ROSE installation.
+
 For generating the CSV file, execute -
 ```
 make
