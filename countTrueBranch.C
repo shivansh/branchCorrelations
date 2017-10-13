@@ -89,8 +89,7 @@ void SimpleInstrumentation::visit(SgNode *astNode)
         SgVarRefExp *i_ref = buildVarRefExp(i_name, func_body);
         SgPlusPlusOp *pp_expression = buildPlusPlusOp(i_ref);
         SgExprStatement* while_body = buildExprStatement(pp_expression);
-        SgName while_lhs_expr = "i";
-        SgVarRefExp *while_lhs_ref = buildVarRefExp(while_lhs_expr,func_body);
+        SgVarRefExp *while_lhs_ref = buildVarRefExp(i_name,func_body);
         SgExprStatement *while_condition = buildExprStatement(buildLessThanOp(while_lhs_ref, buildIntVal(counter)));
         SgWhileStmt *while_stmt = buildWhileStmt(while_condition, while_body, NULL);
         SgVariableDeclaration *i_var = buildVariableDeclaration(i_name, buildIntType());

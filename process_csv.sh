@@ -12,6 +12,7 @@ output_csv="output.csv"
 
 rm -f "$initial_csv" "$initial_output" "$line_csv" "$output_csv"
 
+./countTrueBranch "$2"
 ./gen_line_num "$2" > $line_csv
 gcc "rose_"$(basename $2) &> /dev/null
 
