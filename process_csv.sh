@@ -1,5 +1,7 @@
 #!/bin/bash
-
+# Generates a CSV file in a format accepted by
+# the R script 'correlations.R'
+#
 # First argument: testcase file
 # Second argument: input C file
 # Result is stored in the file: output.csv
@@ -12,7 +14,7 @@ output_csv="output.csv"
 
 rm -f "$initial_csv" "$initial_output" "$line_csv" "$output_csv"
 
-./countTrueBranch "$2"
+./count_true_branch "$2"
 ./gen_line_num "$2" > $line_csv
 gcc "rose_"$(basename $2) &> /dev/null
 
